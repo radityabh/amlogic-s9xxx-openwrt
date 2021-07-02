@@ -52,7 +52,12 @@ pushd package/openwrt-openclash/tools/po2lmo && make && sudo make install 2>/dev
 # Add luci-app-ssr-plus
 svn co https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus package/openwrt-ssrplus
 rm -rf package/openwrt-ssrplus/luci-app-ssr-plus/po/zh_Hans 2>/dev/null
-svn co https://github.com/garypang13/luci-app-bypass.git package/luci-app-bypass
+
+# add luci-app-bypass
+svn co https://github.com/garypang13/openwrt-bypass/trunk/lua-maxminddb package/lua-maxminddb
+svn co https://github.com/garypang13/openwrt-bypass/trunk/lua-maxminddb package/smartdns-le
+svn co https://github.com/garypang13/openwrt-bypass/trunk/luci-app-bypass package/luci-app-bypass
+
 # coolsnowwolf default software package replaced with Lienol related software package
 # rm -rf feeds/packages/utils/{containerd,libnetwork,runc,tini}
 # svn co https://github.com/Lienol/openwrt-packages/trunk/utils/{containerd,libnetwork,runc,tini} feeds/packages/utils
