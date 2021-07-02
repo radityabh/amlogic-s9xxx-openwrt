@@ -29,6 +29,15 @@ sed -i 's/TARGET_rockchip/TARGET_rockchip\|\|TARGET_armvirt/g' package/lean/auto
 # ------------------------------- Main source ends -------------------------------
 
 # ------------------------------- Other started -------------------------------
+# update mwan3
+rm -rf package/lean/luci-app-mwan3helper
+svn co https://github.com/Lienol/openwrt/branches/21.02/package/lean/luci-app-mwan3helper package/lean/luci-app-mwan3helper
+
+rm -rf feeds/luci/applications/luci-app-mwan3
+svn co https://github.com/openwrt/luci/branches/openwrt-21.02/applications/luci-app-mwan3 feeds/luci/applications/luci-app-mwan3
+
+rm -rf feeds/packages/net/mwan3
+svn co https://github.com/openwrt/packages/branches/openwrt-21.02/net/mwan3 feeds/packages/net/mwan3
 #
 # Add luci-app-amlogic
 # svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
