@@ -29,6 +29,13 @@ sed -i 's/TARGET_rockchip/TARGET_rockchip\|\|TARGET_armvirt/g' package/lean/auto
 # ------------------------------- Main source ends -------------------------------
 
 # ------------------------------- Other started -------------------------------
+# edit Argon
+rm -rf package/lean/luci-theme-argon
+git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/lean/luci-theme-argon
+
+#edge Theme
+git clone -b 18.06 https://github.com/garypang13/luci-theme-edge.git package/lean/luci-theme-edge
+
 # update mwan3
 rm -rf package/lean/luci-app-mwan3helper
 svn co https://github.com/Lienol/openwrt/branches/21.02/package/lean/luci-app-mwan3helper package/lean/luci-app-mwan3helper
@@ -54,9 +61,9 @@ svn co https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus package/openw
 rm -rf package/openwrt-ssrplus/luci-app-ssr-plus/po/zh_Hans 2>/dev/null
 
 # add luci-app-bypass
-svn co https://github.com/garypang13/openwrt-bypass/trunk/lua-maxminddb package/lua-maxminddb
-svn co https://github.com/garypang13/openwrt-bypass/trunk/smartdns-le package/smartdns-le
-svn co https://github.com/garypang13/openwrt-bypass/trunk/luci-app-bypass package/luci-app-bypass
+svn co https://github.com/garypang13/luci-app-bypass/trunk/lua-maxminddb package/lua-maxminddb
+svn co https://github.com/garypang13/luci-app-bypass/trunk/smartdns-le package/smartdns-le
+svn co https://github.com/garypang13/luci-app-bypass/trunk/luci-app-bypass package/luci-app-bypass
 
 # coolsnowwolf default software package replaced with Lienol related software package
 # rm -rf feeds/packages/utils/{containerd,libnetwork,runc,tini}
