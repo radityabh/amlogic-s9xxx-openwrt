@@ -55,7 +55,7 @@ rm -rf package/openwrt-ssrplus/luci-app-ssr-plus/po/zh_Hans 2>/dev/null
 
 # add luci-app-bypass
 svn co https://github.com/garypang13/openwrt-bypass/trunk/lua-maxminddb package/lua-maxminddb
-svn co https://github.com/garypang13/openwrt-bypass/trunk/lua-maxminddb package/smartdns-le
+svn co https://github.com/garypang13/openwrt-bypass/trunk/smartdns-le package/smartdns-le
 svn co https://github.com/garypang13/openwrt-bypass/trunk/luci-app-bypass package/luci-app-bypass
 
 # coolsnowwolf default software package replaced with Lienol related software package
