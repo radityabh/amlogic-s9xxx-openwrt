@@ -33,9 +33,6 @@ sed -i 's/TARGET_rockchip/TARGET_rockchip\|\|TARGET_armvirt/g' package/lean/auto
 rm -rf package/lean/luci-theme-argon
 git clone -b 18.06 https://github.com/jerrykuku/luci-theme-argon.git package/lean/luci-theme-argon
 
-#edge Theme
-git clone -b 18.06 https://github.com/garypang13/luci-theme-edge.git package/lean/luci-theme-edge
-
 # update mwan3
 rm -rf package/lean/luci-app-mwan3helper
 svn co https://github.com/Lienol/openwrt/branches/21.02/package/lean/luci-app-mwan3helper package/lean/luci-app-mwan3helper
@@ -47,8 +44,8 @@ rm -rf feeds/packages/net/mwan3
 svn co https://github.com/openwrt/packages/branches/openwrt-21.02/net/mwan3 feeds/packages/net/mwan3
 #
 # Add luci-app-amlogic
-# svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
-svn co https://github.com/garypang13/luci-app-bypass.git package/luci-app-bypass
+svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
+
 # Add luci-app-passwall
 svn co https://github.com/xiaorouji/openwrt-passwall/trunk package/openwrt-passwall
 
@@ -59,11 +56,6 @@ pushd package/openwrt-openclash/tools/po2lmo && make && sudo make install 2>/dev
 # Add luci-app-ssr-plus
 svn co https://github.com/fw876/helloworld/trunk/luci-app-ssr-plus package/openwrt-ssrplus
 rm -rf package/openwrt-ssrplus/luci-app-ssr-plus/po/zh_Hans 2>/dev/null
-
-# add luci-app-bypass
-# svn co https://github.com/garypang13/luci-app-bypass/trunk/lua-maxminddb package/lua-maxminddb
-# svn co https://github.com/garypang13/luci-app-bypass/trunk/smartdns-le package/smartdns-le
-# svn co https://github.com/garypang13/luci-app-bypass/trunk/luci-app-bypass package/luci-app-bypass
 
 # coolsnowwolf default software package replaced with Lienol related software package
 # rm -rf feeds/packages/utils/{containerd,libnetwork,runc,tini}
