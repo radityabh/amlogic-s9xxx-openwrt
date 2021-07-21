@@ -42,7 +42,14 @@ svn co https://github.com/openwrt/luci/branches/openwrt-21.02/applications/luci-
 
 rm -rf feeds/packages/net/mwan3
 svn co https://github.com/openwrt/packages/branches/openwrt-21.02/net/mwan3 feeds/packages/net/mwan3
-#
+
+#nlbwmon
+rm -rf feeds/luci/applications/luci-app-nlbwmon
+svn co https://github.com/openwrt/luci/branches/openwrt-21.02/applications/luci-app-nlbwmon feeds/luci/applications/luci-app-nlbwmon
+
+rm -rf feeds/packages/net/nlbwmon
+svn co https://github.com/openwrt/packages/branches/openwrt-21.02/net/nlbwmon feeds/packages/net/nlbwmon
+
 # Add luci-app-amlogic
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
 
