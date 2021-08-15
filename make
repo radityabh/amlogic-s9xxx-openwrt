@@ -19,6 +19,8 @@ kernel_path=${amlogic_path}/amlogic-kernel
 armbian_path=${amlogic_path}/amlogic-armbian
 uboot_path=${amlogic_path}/amlogic-u-boot
 configfiles_path=${amlogic_path}/common-files
+kernel_library="https://github.com/ophub/flippy-kernel/tree/main/library"
+#kernel_library="https://github.com/ophub/flippy-kernel/trunk/library"
 #===== Do not modify the following parameter settings, End =======
 
 # Set firmware size ( BOOT_MB size >= 128, ROOT_MB size >= 320 )
@@ -151,7 +153,7 @@ refactor_files() {
     build_op=${1}
     build_usekernel=${2}
 
-    kernel_vermaj=$(echo ${build_usekernel} | grep -oE '^[1-9].[0-9]{1,2}')
+    kernel_vermaj=$(echo ${build_usekernel} | grep -oE '^[1-9].[0-9]{1,3}')
     k510_ver=${kernel_vermaj%%.*}
     k510_maj=${kernel_vermaj##*.}
     if  [ "${k510_ver}" -eq "5" ];then
@@ -231,6 +233,19 @@ refactor_files() {
     mkdir -p boot run opt
     chown -R 0:0 ./
 
+    mkdir -p etc/modprobe.d
+    cat > etc/modprobe.d/99-local.conf <<EOF
+blacklist snd_soc_meson_aiu_i2s
+alias brnf br_netfilter
+alias pwm pwm_meson
+alias wifi brcmfmac
+EOF
+
+    # echo br_netfilter > etc/modules.d/br_netfilter
+    echo pwm_meson > etc/modules.d/pwm_meson 2>/dev/null
+    echo panfrost > etc/modules.d/panfrost 2>/dev/null
+    echo meson_gxbb_wdt > etc/modules.d/watchdog 2>/dev/null
+
     # Edit fstab
     ROOTFS_UUID=$(uuidgen)
     #echo "ROOTFS_UUID: ${ROOTFS_UUID}"
@@ -248,8 +263,29 @@ refactor_files() {
     [ -f etc/modules.d/usb-net-asix-ax88179 ] || echo "ax88179_178a" > etc/modules.d/usb-net-asix-ax88179
 
     # Add cpustat
-    cpustat_file=${configfiles_path}/patches/cpustat/cpustat.py
-    [ -f ${cpustat_file} ] && cp -f ${cpustat_file} usr/bin/cpustat && chmod +x usr/bin/cpustat >/dev/null 2>&1
+    cpustat_file=${configfiles_path}/patches/cpustat
+    if [[ -d "${cpustat_file}" && -x "bin/bash" ]]; then
+        cp -f ${cpustat_file}/cpustat usr/bin/cpustat && chmod +x usr/bin/cpustat >/dev/null 2>&1
+        cp -f ${cpustat_file}/getcpu bin/getcpu && chmod +x bin/getcpu >/dev/null 2>&1
+        cp -f ${cpustat_file}/30-sysinfo.sh etc/profile.d/30-sysinfo.sh >/dev/null 2>&1
+        sed -i "s/\/bin\/ash/\/bin\/bash/" etc/passwd >/dev/null 2>&1
+        sed -i "s/\/bin\/ash/\/bin\/bash/" usr/libexec/login.sh >/dev/null 2>&1
+        sync
+    fi
+
+    # Modify the cpu mode to schedutil
+    if [[ -f "etc/config/cpufreq" ]];then
+        sed -i "s/ondemand/schedutil/" etc/config/cpufreq
+    fi
+
+    # Add balethirq
+    balethirq_file=${configfiles_path}/patches/balethirq
+    if [ -d "${balethirq_file}" ];then
+        cp -f ${balethirq_file}/balethirq.pl usr/sbin/balethirq.pl && chmod +x usr/sbin/balethirq.pl >/dev/null 2>&1
+        sed -i "/exit/i\/usr/sbin/balethirq.pl" etc/rc.local >/dev/null 2>&1
+        cp -f ${balethirq_file}/balance_irq etc/config/balance_irq >/dev/null 2>&1
+        sync
+    fi
     
     # Add firmware information to the etc/flippy-openwrt-release
     echo "FDTFILE='${FDTFILE}'" >> etc/flippy-openwrt-release 2>/dev/null
@@ -326,11 +362,11 @@ make_image() {
 
     # Write the specified bootloader
     if  [[ "${MAINLINE_UBOOT}" != "" && -f "${root}${MAINLINE_UBOOT}" ]]; then
-        dd if=${root}${MAINLINE_UBOOT} of=${loop} bs=1 count=442 conv=fsync 2>/dev/null
+        dd if=${root}${MAINLINE_UBOOT} of=${loop} bs=1 count=444 conv=fsync 2>/dev/null
         dd if=${root}${MAINLINE_UBOOT} of=${loop} bs=512 skip=1 seek=1 conv=fsync 2>/dev/null
         #echo -e "${build_op}_v${kernel} write Mainline bootloader: ${MAINLINE_UBOOT}"
     elif [[ "${ANDROID_UBOOT}" != ""  && -f "${root}${ANDROID_UBOOT}" ]]; then
-        dd if=${root}${ANDROID_UBOOT} of=${loop} bs=1 count=442 conv=fsync 2>/dev/null
+        dd if=${root}${ANDROID_UBOOT} of=${loop} bs=1 count=444 conv=fsync 2>/dev/null
         dd if=${root}${ANDROID_UBOOT} of=${loop} bs=512 skip=1 seek=1 conv=fsync 2>/dev/null
         #echo -e "${build_op}_v${kernel} write Android bootloader: ${ANDROID_UBOOT}"
     fi
@@ -495,15 +531,19 @@ Options:
     -d, --default          the kernel version is "latest", and the rootfs partition size is "1024m"
 
     -b, --build=BUILD      Specify multiple cores, use "_" to connect
-       , -b all            Compile all types of openwrt
-       , -b s905x3         Specify a single openwrt for compilation
-       , -b s905x3_s905d   Specify multiple openwrt, use "_" to connect
+      , -b all             Compile all types of openwrt
+      , -b s905x3          Specify a single openwrt for compilation
+      , -b s905x3_s905d    Specify multiple openwrt, use "_" to connect
 
     -k=VERSION             set the kernel version, which must be in the "kernel" directory
-       , -k all            build all the kernel version
-       , -k latest         build the latest kernel version
-       , -k 5.4.6          Specify a single kernel for compilation
-       , -k 5.4.6_5.9.0    Specify multiple cores, use "_" to connect
+      , -k all             build all the kernel version
+      , -k latest          build the latest kernel version
+      , -k 5.4.6           Specify a single kernel for compilation
+      , -k 5.4.6_5.9.0     Specify multiple cores, use "_" to connect
+
+    -u, --update           Whether to auto update to the latest kernel of the same series
+      , -u ture            Auto update to the latest kernel
+      , -u false           Do not upgrade, compile the specified kernel
 
     --kernel               show all kernel version in "kernel" directory
 
@@ -524,70 +564,79 @@ get_kernels
 
 while [ "${1}" ]; do
     case "${1}" in
-    -h | --help)
-        usage && exit
-        ;;
-    -c | --clean)
-        cleanup
-        rm -rf ${out_path}
-        echo "Clean up ok!" && exit
-        ;;
-    -d | --default)
-        : ${rootsize:=${ROOT_MB}}
-        : ${firmware:="${firmwares[0]}"}
-        : ${kernel:="${kernels[-1]}"}
-        : ${build:="all"}
-        ;;
-    -b | --build)
-        build=${2}
-        if   [ "${build}" = "all" ]; then
-             shift
-        elif [ -n "${build}" ]; then
-             unset build_openwrt
-             oldIFS=$IFS
-             IFS=_
-             build_openwrt=(${build})
-             IFS=$oldIFS
-             unset build
-             : ${build:="all"}
-             shift
-        else
-             die "Invalid build [ ${2} ]!"
-        fi
-        ;;
-    -k)
-        kernel=${2}
-        if   [ "${kernel}" = "all" ]; then
-             shift
-        elif [ "${kernel}" = "latest" ]; then
-             kernel="${kernels[-1]}"
-             shift
-        elif [ -n "${kernel}" ]; then
-             oldIFS=$IFS
-             IFS=_
-             kernels=(${kernel})
-             IFS=$oldIFS
-             unset kernel
-             : ${kernel:="all"}
-             shift
-        else
-             die "Invalid kernel [ ${2} ]!"
-        fi
-        ;;
-    --kernel)
-        show_kernels && exit
-        ;;
-    -s | --size)
-        rootsize=${2}
-        if [[ "${rootsize}" -ge 256 ]]; then
-            shift
-        else
-            die "Invalid size [ ${2} ]!"
-        fi
-        ;;
-    *)
-        die "Invalid option [ ${1} ]!"
-        ;;
+        -h | --help)
+            usage && exit
+            ;;
+        -c | --clean)
+            cleanup
+            rm -rf ${out_path}
+            echo "Clean up ok!" && exit
+            ;;
+        -d | --default)
+            : ${rootsize:=${ROOT_MB}}
+            : ${firmware:="${firmwares[0]}"}
+            : ${kernel:="${kernels[-1]}"}
+            : ${build:="all"}
+            : ${auto_kernel:="true"}
+            ;;
+        -b | --build)
+            build=${2}
+            if   [ "${build}" = "all" ]; then
+                 shift
+            elif [ -n "${build}" ]; then
+                 unset build_openwrt
+                 oldIFS=$IFS
+                 IFS=_
+                 build_openwrt=(${build})
+                 IFS=$oldIFS
+                 unset build
+                 : ${build:="all"}
+                 shift
+            else
+                 die "Invalid build [ ${2} ]!"
+            fi
+            ;;
+        -k)
+            kernel=${2}
+            if   [ "${kernel}" = "all" ]; then
+                 shift
+            elif [ "${kernel}" = "latest" ]; then
+                 kernel="${kernels[-1]}"
+                 shift
+            elif [ -n "${kernel}" ]; then
+                 oldIFS=$IFS
+                 IFS=_
+                 kernels=(${kernel})
+                 IFS=$oldIFS
+                 unset kernel
+                 : ${kernel:="all"}
+                 shift
+            else
+                 die "Invalid kernel [ ${2} ]!"
+            fi
+            ;;
+        -a | --autokernel)
+            auto_kernel=${2}
+            if [ -n "${auto_kernel}" ]; then
+                shift
+            else
+                die "Invalid size [ ${2} ]!"
+            fi
+            ;;
+        --kernel)
+            show_kernels && exit
+            ;;
+        -s | --size)
+            rootsize=${2}
+            if [[ "${rootsize}" -ge 256 ]]; then
+                shift
+            else
+                die "Invalid size [ ${2} ]!"
+            fi
+            ;;
+        *)
+            die "Invalid option [ ${1} ]!"
+            ;;
     esac
     shift
 done
@@ -614,6 +663,65 @@ fi
 [ ${kernel} != "all" ] && unset kernels && kernels=(${kernel})
 [ ${build} != "all" ] && unset build_openwrt && build_openwrt=(${build})
 
+# Convert kernel library address to svn format
+if [[ ${kernel_library} == http* && $(echo ${kernel_library} | grep "tree/main") != "" ]]; then
+    kernel_library=${kernel_library//tree\/main/trunk}
+fi
+
+# Check the new version on the kernel library, when auto_kernel=true
+if [[ -n "${auto_kernel}" && "${auto_kernel}" == "true" ]]; then
+
+    # Set empty array
+    TMP_ARR_KERNELS=()
+
+    # Convert kernel library address to API format
+    SERVER_KERNEL_URL=${kernel_library#*com\/}
+    SERVER_KERNEL_URL=${SERVER_KERNEL_URL//trunk/contents}
+    SERVER_KERNEL_URL="https://api.github.com/repos/${SERVER_KERNEL_URL}"
+
+    # Query the latest kernel in a loop
+    i=1
+    for KERNEL_VAR in ${kernels[*]}; do
+        echo -e "(${i}) Auto query the latest kernel version of the same series for [ ${KERNEL_VAR} ]"
+        MAIN_LINE_M=$(echo "${KERNEL_VAR}" | cut -d '.' -f1)
+        MAIN_LINE_V=$(echo "${KERNEL_VAR}" | cut -d '.' -f2)
+        MAIN_LINE_S=$(echo "${KERNEL_VAR}" | cut -d '.' -f3)
+        MAIN_LINE="${MAIN_LINE_M}.${MAIN_LINE_V}"
+        # Check the version on the server (e.g LATEST_VERSION="124")
+        LATEST_VERSION=$(curl -s "${SERVER_KERNEL_URL}" | grep "name" | grep -oE "${MAIN_LINE}.[0-9]+"  | sed -e "s/${MAIN_LINE}.//g" | sort -n | sed -n '$p')
+        if [[ "$?" -eq "0" && ! -z "${LATEST_VERSION}" ]]; then
+            TMP_ARR_KERNELS[${i}]="${MAIN_LINE}.${LATEST_VERSION}"
+        else
+            TMP_ARR_KERNELS[${i}]="${KERNEL_VAR}"
+        fi
+        echo -e "(${i}) [ ${TMP_ARR_KERNELS[$i]} ] is latest kernel. \n"
+
+        let i++
+    done
+
+    # Reset the kernel array to the latest kernel version
+    unset kernels
+    kernels=${TMP_ARR_KERNELS[*]}
+
+fi
+
+# Synchronization related kernel
+i=1
+for KERNEL_VAR in ${kernels[*]}; do
+    if [ ! -d "${kernel_path}/${KERNEL_VAR}" ]; then
+        echo -e "(${i}) [ ${KERNEL_VAR} ] Kernel loading from [ ${kernel_library}/${KERNEL_VAR} ]"
+        svn checkout ${kernel_library}/${KERNEL_VAR} ${kernel_path}/${KERNEL_VAR} >/dev/null
+        rm -rf ${kernel_path}/${KERNEL_VAR}/.svn >/dev/null && sync
+    else
+        echo -e "(${i}) [ ${KERNEL_VAR} ] Kernel is in the local directory."
+    fi
+
+    let i++
+done
+
+echo -e "Ready, start packaging... \n"
+
+# Start loop compilation
 k=1
 for b in ${build_openwrt[*]}; do
 
