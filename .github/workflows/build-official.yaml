@@ -5,7 +5,7 @@
 # Source code repository: https://github.com/coolsnowwolf/lede / Branch: master
 #========================================================================================================================
 
-name: Build OpenWrt lede
+name: Build OpenWrt Official
 
 on:
   repository_dispatch:
