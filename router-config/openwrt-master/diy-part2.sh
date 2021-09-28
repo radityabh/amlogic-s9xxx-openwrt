@@ -87,13 +87,13 @@ pushd package/openwrt-openclash/tools/po2lmo && make && sudo make install 2>/dev
 #rm -rf package/openwrt-ssrplus/luci-app-ssr-plus/po/zh_Hans 2>/dev/null
 
 # luci-theme-infinityfreedom
-src-git infinityfreedom https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom.git
+# src-git infinityfreedom https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom.git
 
 # Add luci-app-rclone
 # svn co https://github.com/ElonH/Rclone-OpenWrt/trunk package/openWrt-rclone
 
 # Add luci-app-diskman
-svn co https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman package/openwrt-diskman/luci-app-diskman
+# svn co https://github.com/lisaac/luci-app-diskman/trunk/applications/luci-app-diskman package/openwrt-diskman/luci-app-diskman
 #wget https://raw.githubusercontent.com/lisaac/luci-app-diskman/master/Parted.Makefile -q -P package/openwrt-diskman/parted
 #pushd package/openwrt-diskman/parted && mv -f Parted.Makefile Makefile 2>/dev/null && popd
 
