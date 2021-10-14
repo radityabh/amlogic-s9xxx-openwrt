@@ -15,7 +15,7 @@
 # sed -i 's/luci-theme-bootstrap/luci-theme-material/g' ./feeds/luci/collections/luci/Makefile
 
 # Modify some code adaptation
-sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
+# sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
 
 # Add the default password for the 'root' user（Change the empty password to 'password'）
 # sed -i 's/root::0:0:99999:7:::/root:$1$V4UetPzk$CYXluq4wUazHjmCDBCqXF.:0:0:99999:7:::/g' package/base-files/files/etc/shadow
@@ -35,8 +35,8 @@ sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci
 # ------------------------------- Lienol started -------------------------------
 #
 # Add branches package from Lienol/openwrt/branches/main/package and Remove duplicate packages
-svn co https://github.com/Lienol/openwrt/trunk/package/{lean,default-settings} package
-rm -rf package/lean/{luci-app-frpc,luci-app-frps,libtorrent-rasterbar} 2>/dev/null
+# svn co https://github.com/Lienol/openwrt/trunk/package/{lean,default-settings} package
+# rm -rf package/lean/{luci-app-frpc,luci-app-frps,libtorrent-rasterbar} 2>/dev/null
 
 # Add firewall rules
 zzz_iptables_row=$(sed -n '/iptables/=' package/default-settings/files/zzz-default-settings | head -n 1)
