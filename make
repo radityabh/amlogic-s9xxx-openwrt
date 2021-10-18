@@ -9,7 +9,7 @@
 #======================================================================================================================
 
 #===== Do not modify the following parameter settings, Start =====
-build_openwrt=("s905x3" "s905x2" "s905x" "s905w" "s905d" "s912" "s922x")
+build_openwrt=("s922x" "s905x3" "s905x2" "s912" "s905d" "s905x" "s905w")
 make_path=${PWD}
 tmp_path=${make_path}/tmp
 out_path=${make_path}/out
@@ -61,56 +61,13 @@ cleanup() {
 extract_openwrt() {
     cd ${make_path}
     local firmware="${openwrt_path}/${firmware}"
-    local suffix="${firmware##*.}"
-    mount="${tmp_path}/mount"
+
     root_comm="${tmp_path}/root_comm"
+    mkdir -p ${root_comm}
 
-    mkdir -p ${mount} ${root_comm}
-    while true; do
-        case "${suffix}" in
-        tar)
-            tar -xf ${firmware} -C ${root_comm}
-            break
-            ;;
-        gz)
-            if ls ${firmware} | grep -q ".tar.gz$"; then
-                tar -xzf ${firmware} -C ${root_comm}
-                break
-            else
-                tmp_firmware="${tmp_path}/${firmware##*/}"
-                tmp_firmware=${tmp_firmware%.*}
-                gzip -d ${firmware} -c > ${tmp_firmware}
-                firmware=${tmp_firmware}
-                suffix=${firmware##*.}
-            fi
-            ;;
-        img)
-            loop_setup ${firmware}
-            if ! mount -r ${loop}p2 ${mount}; then
-                if ! mount -r ${loop}p1 ${mount}; then
-                    die "mount ${loop} failed!"
-                fi
-            fi
-            cp -rf ${mount}/* ${root_comm} && sync
-            umount -f ${mount}
-            losetup -d ${loop}
-            break
-            ;;
-        ext4)
-            if ! mount -r -o loop ${firmware} ${mount}; then
-                die "mount ${firmware} failed!"
-            fi
-            cp -rf ${mount}/* ${root_comm} && sync
-            umount -f ${mount}
-            break
-            ;;
-        *)
-            die "This script only supports rootfs.tar[.gz], ext4-factory.img[.gz], root.ext4[.gz] six formats."
-            ;;
-        esac
-    done
-
+    tar -xzf ${firmware} -C ${root_comm}
     rm -rf ${root_comm}/lib/modules/*/
+    sync
 }
 
 extract_armbian() {
@@ -124,23 +81,27 @@ extract_armbian() {
 
     tar -xJf "${armbian_path}/boot-common.tar.xz" -C ${boot}
     tar -xJf "${armbian_path}/firmware.tar.xz" -C ${root}
+    sync
 
     if [ -f ${kernel_dir}/boot-* -a -f ${kernel_dir}/dtb-amlogic-* -a -f ${kernel_dir}/modules-* ]; then
         mkdir -p ${boot}/dtb/amlogic ${root}/lib/modules
         tar -xzf ${kernel_dir}/dtb-amlogic-*.tar.gz -C ${boot}/dtb/amlogic
+        sync
 
         tar -xzf ${kernel_dir}/boot-*.tar.gz -C ${boot}
         mv -f ${boot}/uInitrd-* ${boot}/uInitrd && mv -f ${boot}/vmlinuz-* ${boot}/zImage 2>/dev/null
+        sync
 
         tar -xzf ${kernel_dir}/modules-*.tar.gz -C ${root}/lib/modules
         cd ${root}/lib/modules/*/
         rm -rf *.ko
         find ./ -type f -name '*.ko' -exec ln -s {} ./ \;
-        cd ${make_path} && sync
+        sync
     else
         die "Have no kernel files in [ ${kernel_dir} ]"
     fi
 
+    cd ${make_path}
     cp -rf ${root_comm}/* ${root}
 
     # Complete file for ${root}: [ /etc ], [ /lib/u-boot ] etc.
@@ -169,6 +130,13 @@ refactor_files() {
     fi
 
     case "${build_op}" in
+        s922x | belink | belinkpro | ugoos)
+            FDTFILE="meson-g12b-gtking-pro.dtb"
+            UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
+            MAINLINE_UBOOT="/lib/u-boot/gtkingpro-u-boot.bin.sd.bin"
+            ANDROID_UBOOT=""
+            AMLOGIC_SOC="s922x"
+            ;;
         s905x3 | x96 | hk1 | h96 | ugoosx3)
             FDTFILE="meson-sm1-x96-max-plus-100m.dtb"
             UBOOT_OVERLOAD="u-boot-x96maxplus.bin"
@@ -183,6 +151,20 @@ refactor_files() {
             ANDROID_UBOOT=""
             AMLOGIC_SOC="s905x2"
             ;;
+        s912 | h96proplus | octopus)
+            FDTFILE="meson-gxm-octopus-planet.dtb"
+            UBOOT_OVERLOAD="u-boot-zyxq.bin"
+            MAINLINE_UBOOT=""
+            ANDROID_UBOOT=""
+            AMLOGIC_SOC="s912"
+            ;;
+        s905d | n1)
+            FDTFILE="meson-gxl-s905d-phicomm-n1.dtb"
+            UBOOT_OVERLOAD="u-boot-n1.bin"
+            MAINLINE_UBOOT=""
+            ANDROID_UBOOT="/lib/u-boot/u-boot-2015-phicomm-n1.bin"
+            AMLOGIC_SOC="s905d"
+            ;;
         s905x | hg680p | b860h)
             FDTFILE="meson-gxl-s905x-p212.dtb"
             UBOOT_OVERLOAD="u-boot-p212.bin"
@@ -196,27 +178,6 @@ refactor_files() {
             MAINLINE_UBOOT=""
             ANDROID_UBOOT=""
             AMLOGIC_SOC="s905w"
-            ;;
-        s905d | n1)
-            FDTFILE="meson-gxl-s905d-phicomm-n1.dtb"
-            UBOOT_OVERLOAD="u-boot-n1.bin"
-            MAINLINE_UBOOT=""
-            ANDROID_UBOOT="/lib/u-boot/u-boot-2015-phicomm-n1.bin"
-            AMLOGIC_SOC="s905d"
-            ;;
-        s912 | h96proplus | octopus)
-            FDTFILE="meson-gxm-octopus-planet.dtb"
-            UBOOT_OVERLOAD="u-boot-zyxq.bin"
-            MAINLINE_UBOOT=""
-            ANDROID_UBOOT=""
-            AMLOGIC_SOC="s912"
-            ;;
-        s922x | belink | belinkpro | ugoos)
-            FDTFILE="meson-g12b-gtking-pro.dtb"
-            UBOOT_OVERLOAD="u-boot-gtkingpro.bin"
-            MAINLINE_UBOOT="/lib/u-boot/gtkingpro-u-boot.bin.sd.bin"
-            ANDROID_UBOOT=""
-            AMLOGIC_SOC="s922x"
             ;;
         *)
             die "Have no this firmware: [ ${build_op} - ${kernel} ]"
@@ -281,7 +242,6 @@ EOF
         cp -f ${cpustat_file}/30-sysinfo.sh etc/profile.d/30-sysinfo.sh >/dev/null 2>&1
         sed -i "s/\/bin\/ash/\/bin\/bash/" etc/passwd >/dev/null 2>&1
         sed -i "s/\/bin\/ash/\/bin\/bash/" usr/libexec/login.sh >/dev/null 2>&1
-        sync
     fi
 
     # Modify the cpu mode to schedutil
@@ -295,7 +255,6 @@ EOF
         cp -f ${balethirq_file}/balethirq.pl usr/sbin/balethirq.pl && chmod +x usr/sbin/balethirq.pl >/dev/null 2>&1
         sed -i "/exit/i\/usr/sbin/balethirq.pl" etc/rc.local >/dev/null 2>&1
         cp -f ${balethirq_file}/balance_irq etc/config/balance_irq >/dev/null 2>&1
-        sync
     fi
     
     # Add firmware information to the etc/flippy-openwrt-release
@@ -368,12 +327,12 @@ make_image() {
     IMG_SIZE=$((SKIP_MB + BOOT_MB + rootsize))
 
     #fallocate -l ${IMG_SIZE}M ${build_image_file}
-    dd if=/dev/zero of=${build_image_file} bs=1M count=${IMG_SIZE} 2>/dev/null && sync
+    dd if=/dev/zero of=${build_image_file} bs=1M count=${IMG_SIZE} conv=fsync 2>/dev/null && sync
 
     parted -s ${build_image_file} mklabel msdos 2>/dev/null
     parted -s ${build_image_file} mkpart primary fat32 $((SKIP_MB))M $((SKIP_MB + BOOT_MB -1))M 2>/dev/null
     parted -s ${build_image_file} mkpart primary btrfs $((SKIP_MB + BOOT_MB))M 100% 2>/dev/null
-    #parted -s ${build_image_file} print 2>/dev/null
+    sync
 
     loop_setup ${build_image_file}
     mkfs.vfat -n "BOOT" ${loop}p1 >/dev/null 2>&1
@@ -399,8 +358,8 @@ copy2image() {
 
     set -e
 
-    local bootfs="${mount}/${kernel}/${build_op}/bootfs"
-    local rootfs="${mount}/${kernel}/${build_op}/rootfs"
+    local bootfs="${tmp_path}/${kernel}/${build_op}/bootfs"
+    local rootfs="${tmp_path}/${kernel}/${build_op}/rootfs"
 
     mkdir -p ${bootfs} ${rootfs} && sync
     if ! mount ${loop}p1 ${bootfs}; then
@@ -511,13 +470,14 @@ choose_build() {
     done
     echo && read -p " Please select the Amlogic SoC: " pause
     case  $pause in
-          s905x3 | 1) build="s905x3" ;;
-          s905x2 | 2) build="s905x2" ;;
-          s905x | 3) build="s905x" ;;
-          s905d | 4) build="s905d" ;;
-          s912 | 5) build="s912" ;;
-          s922x | 6) build="s922x" ;;
-          *) die "Have no this Amlogic SoC" ;;
+        1 | s922x)  build="s922x" ;;
+        2 | s905x3) build="s905x3" ;;
+        3 | s905x2) build="s905x2" ;;
+        4 | s912)   build="s912" ;;
+        5 | s905d)  build="s905d" ;;
+        6 | s905x)  build="s905x" ;;
+        7 | s905w)  build="s905w" ;;
+        *) die "Have no this Amlogic SoC" ;;
     esac
     tag ${build}
 }
@@ -559,8 +519,8 @@ Options:
     -k=VERSION             set the kernel version, which must be in the "kernel" directory
       , -k all             build all the kernel version
       , -k latest          build the latest kernel version
-      , -k 5.4.6           Specify a single kernel for compilation
-      , -k 5.4.6_5.9.0     Specify multiple cores, use "_" to connect
+      , -k 5.4.150         Specify a single kernel for compilation
+      , -k 5.4.150_5.10.70 Specify multiple cores, use "_" to connect
 
     -u, --update           Whether to auto update to the latest kernel of the same series
       , -u ture            Auto update to the latest kernel
@@ -739,6 +699,7 @@ for KERNEL_VAR in ${kernels[*]}; do
 
     let i++
 done
+sync
 
 echo -e "Ready, start packaging... \n"
 
