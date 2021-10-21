@@ -5,8 +5,7 @@
 # Source code repository: https://github.com/coolsnowwolf/lede / Branch: master
 #========================================================================================================================
 
-name: Build OpenWrt lede
-
+name: Build Immortalwrt
 on:
   repository_dispatch:
   workflow_dispatch:
