@@ -268,7 +268,7 @@ EOF
 
     # Add drivers
     [ -f etc/modules.d/rtl8189fs ] || echo "rtl8189fs" > etc/modules.d/rtl8189fs
-    [ -f etc/modules.d/rtl8189fs ] || echo "rtl8189es" > etc/modules.d/rtl8189es
+    [ -f etc/modules.d/rtl8189es ] || echo "rtl8189es" > etc/modules.d/rtl8189es
     [ -f etc/modules.d/rtl8188fu ] || echo "rtl8188fu" > etc/modules.d/rtl8188fu
     [ -f etc/modules.d/usb-net-rtl8150 ] || echo "rtl8150" > etc/modules.d/usb-net-rtl8150
     [ -f etc/modules.d/usb-net-rtl8152 ] || echo "r8152" > etc/modules.d/usb-net-rtl8152
