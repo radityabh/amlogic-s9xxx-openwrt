@@ -270,6 +270,7 @@ EOF
     [ -f etc/modules.d/8189fs ] || echo "8189fs" >etc/modules.d/8189fs
     [ -f etc/modules.d/8189es ] || echo "8189es" >etc/modules.d/8189es
     [ -f etc/modules.d/88X2cs ] || echo "88x2cs" >etc/modules.d/88x2cs
+    [ -f etc/modules.d/rtl8188fu ] || echo "rtl8188fu" > etc/modules.d/rtl8188fu
     [ -f etc/modules.d/8188eu ] || echo "8188eu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8188eu
     [ -f etc/modules.d/8192cu ] || echo "8192cu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192cu
     [ -f etc/modules.d/8192eu ] || echo "8192eu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192eu
