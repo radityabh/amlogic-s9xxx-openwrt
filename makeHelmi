@@ -270,11 +270,27 @@ EOF
     [ -f etc/modules.d/8189fs ] || echo "8189fs" >etc/modules.d/8189fs
     [ -f etc/modules.d/8189es ] || echo "8189es" >etc/modules.d/8189es
     [ -f etc/modules.d/88X2cs ] || echo "88x2cs" >etc/modules.d/88x2cs
+    [ -f etc/modules.d/88X2bs ] || echo "88x2bs" >etc/modules.d/88x2bs
+    [ -f etc/modules.d/88X2ce ] || echo "88x2ce" >etc/modules.d/88x2ce
     [ -f etc/modules.d/rtl8188fu ] || echo "rtl8188fu" > etc/modules.d/rtl8188fu
     [ -f etc/modules.d/8188eu ] || echo "8188eu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8188eu
+    [ -f etc/modules.d/8188gu ] || echo "8188gu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8188gu
     [ -f etc/modules.d/8192cu ] || echo "8192cu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192cu
+    [ -f etc/modules.d/8192du ] || echo "8192du rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192du
     [ -f etc/modules.d/8192eu ] || echo "8192eu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192eu
-    [ -f etc/modules.d/88XXau ] || echo "88XXau rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/88XXau
+    [ -f etc/modules.d/8192ee ] || echo "8192ee rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8192ee
+    # [ -f etc/modules.d/88XXau ] || echo "88XXau rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/88XXau
+    [ -f etc/modules.d/8812au ] || echo "8812au rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8812au
+    [ -f etc/modules.d/8814au ] || echo "8814au rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8814au
+    [ -f etc/modules.d/8821cu ] || echo "8821cu rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/8821cu
+    [ -f etc/modules.d/rtl8821au ] || echo "rtl8821au rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/rtl8821au
+    [ -f etc/modules.d/rt2500usb ] || echo "rt2500usb rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/rt2500usb
+    [ -f etc/modules.d/rt2800usb ] || echo "rt2800usb rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/rt2800usb
+    [ -f etc/modules.d/rt2x00usb ] || echo "rt2x00usb rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/rt2x00usb
+    [ -f etc/modules.d/mt7601u ] || echo "mt7601u rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/mt7601u
+    [ -f etc/modules.d/mt7663u ] || echo "mt7663u rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/mt7663u
+    [ -f etc/modules.d/mt76x0u ] || echo "mt76x0u rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/mt76x0u
+    [ -f etc/modules.d/mt76x2u ] || echo "mt76x2u rtw_power_mgnt=0 rtw_enusbss=0" >etc/modules.d/mt76x2u
     [ -f etc/modules.d/usb-net-rtl8150 ] || echo "rtl8150" > etc/modules.d/usb-net-rtl8150
     [ -f etc/modules.d/usb-net-rtl8152 ] || echo "r8152" > etc/modules.d/usb-net-rtl8152
     [ -f etc/modules.d/usb-net-asix-ax88179 ] || echo "ax88179_178a" > etc/modules.d/usb-net-asix-ax88179
