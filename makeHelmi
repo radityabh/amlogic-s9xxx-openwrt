@@ -205,7 +205,7 @@ refactor_files() {
             AMLOGIC_SOC="s905d"
             ;;
         s912 | h96proplus | octopus)
-            FDTFILE="meson-gxm-octopus-planet.dtb"
+            FDTFILE="meson-gxm-nexbox-a2.dtb"
             UBOOT_OVERLOAD="u-boot-zyxq.bin"
             MAINLINE_UBOOT=""
             ANDROID_UBOOT=""
@@ -294,6 +294,9 @@ EOF
     [ -f etc/modules.d/usb-net-rtl8150 ] || echo "rtl8150" > etc/modules.d/usb-net-rtl8150
     [ -f etc/modules.d/usb-net-rtl8152 ] || echo "r8152" > etc/modules.d/usb-net-rtl8152
     [ -f etc/modules.d/usb-net-asix-ax88179 ] || echo "ax88179_178a" > etc/modules.d/usb-net-asix-ax88179
+    [ -f etc/modules.d/ath10k_core ] || echo "ath10k_core" >etc/modules.d/ath10k_core
+    [ -f etc/modules.d/ath10k_sdio ] || echo "ath10k_sdio" >etc/modules.d/ath10k_sdio
+    [ -f etc/modules.d/ath10k_usb ] || echo "ath10k_usb" >etc/modules.d/ath10k_usb
 
     # Add cpustat
     cpustat_file=${configfiles_path}/patches/cpustat
