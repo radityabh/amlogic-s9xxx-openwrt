@@ -218,6 +218,15 @@ refactor_files() {
             ANDROID_UBOOT=""
             AMLOGIC_SOC="s922x"
             ;;
+        s905 | beelinkminimx | mxqpro+)
+            FDTFILE="meson-gxbb-beelink-mini-mx.dtb"
+            #FDTFILE="meson-gxbb-mxq-pro-plus.dtb"
+            #FDTFILE="meson-gxbb-vega-s95-telos.dtb"
+            UBOOT_OVERLOAD="u-boot-s905.bin"
+            #UBOOT_OVERLOAD="u-boot-p201.bin"
+            MAINLINE_UBOOT=""
+            ANDROID_UBOOT=""
+        ;;
         *)
             die "Have no this firmware: [ ${build_op} - ${kernel} ]"
             ;;
