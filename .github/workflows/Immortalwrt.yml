@@ -12,7 +12,7 @@ on:
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: openwrt-18.06-k5.4
+  REPO_BRANCH: openwrt-21.02
   FEEDS_CONF: router-config/lede-master/feeds.conf.default
   CONFIG_FILE: router-config/lede-master/.config
   DIY_P1_SH: router-config/lede-master/diy-part1.sh
@@ -26,7 +26,7 @@ env:
   DELETE_RELEASE: true
   DELETE_ARTIFACTS: true
   RECENT_LASTEST: 3
-  TZ: Asia/Shanghai
+  TZ: Asia/Singapore
 
 jobs:
   build:
@@ -137,7 +137,8 @@ jobs:
         [ -d openwrt-armvirt ] || mkdir -p openwrt-armvirt
         cp -f openwrt/bin/targets/*/*/*.tar.gz openwrt-armvirt/ && sync
         sudo chmod +x make
-        sudo ./make -d -b s905x3_s905x2_s905x_s905w_s905d_s922x_s912 -k 5.10.70_5.4.150
+        #sudo ./make -d -b s905x3_s905x2_s905x_s905w_s905d_s922x_s912 -k 5.10.70_5.4.150
+        sudo ./make -d -b s905w -k 5.10.70_5.4.150
         [ -d ipk ] || mkdir -p ipk
         cp -rf $(find openwrt/bin/packages/ -type f -name "*.ipk") ipk/ && sync
         sudo tar -czf ipk.tar.gz ipk && mv -f ipk.tar.gz out/ && sync
@@ -176,7 +177,7 @@ jobs:
         body: |
           This is OpenWrt firmware for Amlogic S9xxx STB
           * Firmware information
-          Default IP: 192.168.1.1
+          Default IP: 192.168.2.1
           Default username: root
           Default password: password
           Default WIFI name: OpenWrt
