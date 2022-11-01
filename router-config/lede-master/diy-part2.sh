@@ -14,7 +14,7 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 
 # Version Update
 sed -i '/DISTRIB_DESCRIPTION/d' package/base-files/files/etc/openwrt_release
-echo "DISTRIB_DESCRIPTION=' Beta6 build $(TZ=UTC+8 date "+%Y.%m") '" >> package/base-files/files/etc/openwrt_release
+echo "DISTRIB_DESCRIPTION=' STB B2 build $(TZ=UTC+8 date "+%Y.%m") '" >> package/base-files/files/etc/openwrt_release
 sed -i '/DISTRIB_REVISION/d' package/base-files/files/etc/openwrt_release
 echo "DISTRIB_REVISION='[WSS]'" >> package/base-files/files/etc/openwrt_release
 
