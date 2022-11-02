@@ -22,9 +22,6 @@ cat << 'EOF' >>  99-default-settings
 exit 0
 EOF
 
-echo "=== gigalog: Start of 99-default-settings contents.. ==="
-cat 99-default-settings
-echo "=== gigalog: End off 99-default-settings contents.. ==="
 popd
 
 pushd package/base-files
