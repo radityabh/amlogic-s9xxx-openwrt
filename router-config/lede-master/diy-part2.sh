@@ -12,14 +12,39 @@
 # Modify default IP
 sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generate
 
+# Mod default-settings
+[ -d package/emortal/default-settings/files ] && pushd package/emortal/default-settings/files
+
+cat << 'EOF' >>  99-default-settings
+#if ! grep '/usr/bin/zsh' /etc/passwd
+#sed -i 's|/bin/ash|/usr/bin/zsh|g' /etc/passwd
+#fi
+exit 0
+EOF
+
+echo "=== gigalog: Start of 99-default-settings contents.. ==="
+cat 99-default-settings
+echo "=== gigalog: End off 99-default-settings contents.. ==="
+popd
+
+pushd package/base-files
+sed -i 's/ImmortalWrt/GiGaWRT/g' image-config.in
+sed -i 's/ImmortalWrt/GiGaWRT/g' files/bin/config_generate
+sed -i 's/UTC/UTC+8/g' files/bin/config_generate
+popd
+
+sed -i 's/ImmortalWrt/GiGaWRT/g' config/Config-images.in
+sed -i 's/ImmortalWrt/GiGaWRT/g' include/version.mk
+sed -i 's/immortalwrt.org/openwrt.org/g' include/version.mk
+
 # Version Update
 sed -i '/DISTRIB_DESCRIPTION/d' package/base-files/files/etc/openwrt_release
-echo "DISTRIB_DESCRIPTION=' STB B2 build $(TZ=UTC+8 date "+%Y.%m") '" >> package/base-files/files/etc/openwrt_release
+echo "DISTRIB_DESCRIPTION=' STB B3 build $(TZ=UTC+8 date "+%Y.%m") '" >> package/base-files/files/etc/openwrt_release
 sed -i '/DISTRIB_REVISION/d' package/base-files/files/etc/openwrt_release
 echo "DISTRIB_REVISION='[WSS]'" >> package/base-files/files/etc/openwrt_release
 
 # Modify default theme（FROM uci-theme-bootstrap CHANGE TO luci-theme-material）
-sed -i 's/luci-theme-bootstrap/luci-theme-material/g' ./feeds/luci/collections/luci/Makefile
+#sed -i 's/luci-theme-bootstrap/luci-theme-material/g' ./feeds/luci/collections/luci/Makefile
 
 # Modify some code adaptation
 sed -i 's/LUCI_DEPENDS.*/LUCI_DEPENDS:=\@\(arm\|\|aarch64\)/g' package/lean/luci-app-cpufreq/Makefile
@@ -141,11 +166,15 @@ svn co https://github.com/openwrt/packages/branches/openwrt-21.02/net/mwan3 feed
 # Add luci-app-amlogic
 svn co https://github.com/ophub/luci-app-amlogic/trunk/luci-app-amlogic package/luci-app-amlogic
 
-# Add luci-app-passwall
-# svn co https://github.com/xiaorouji/openwrt-passwall/trunk package/openwrt-passwall
-
 # Add official OpenClash source
 git clone --depth=1 -b dev https://github.com/vernesong/OpenClash
+
+# HelmiWrt packages
+git clone --depth=1 https://github.com/helmiau/helmiwrt-packages
+rm -rf helmiwrt-packages/luci-app-v2raya
+# telegrambot
+svn co https://github.com/helmiau/helmiwrt-adds/trunk/packages/net/telegrambot helmiwrt-adds/telegrambot
+svn co https://github.com/helmiau/helmiwrt-adds/trunk/luci/luci-app-telegrambot helmiwrt-adds/luci-app-telegrambot
 
 # Add Adguardhome
 git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/new/luci-app-adguardhome
@@ -176,6 +205,11 @@ sed -i '/init/d' feeds/packages/net/adguardhome/Makefile
 popd
 #
 # ------------------------------- Other ends -------------------------------
+
+# Fix mt76 wireless driver
+pushd package/kernel/mt76
+sed -i '/mt7662u_rom_patch.bin/a\\techo mt76-usb disable_usb_sg=1 > $\(1\)\/etc\/modules.d\/mt76-usb' Makefile
+popd
 
 # Add extra wireless drivers
 svn co https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/kernel/rtl8812au-ac
