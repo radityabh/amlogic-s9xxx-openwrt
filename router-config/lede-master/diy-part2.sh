@@ -16,9 +16,10 @@ sed -i 's/192.168.1.1/192.168.2.1/g' package/base-files/files/bin/config_generat
 [ -d package/emortal/default-settings/files ] && pushd package/emortal/default-settings/files
 
 cat << 'EOF' >>  99-default-settings
-#if ! grep '/usr/bin/zsh' /etc/passwd
-#sed -i 's|/bin/ash|/usr/bin/zsh|g' /etc/passwd
-#fi
+if ! grep '/usr/bin/zsh' /etc/passwd
+sed -i 's|/bin/ash|/usr/bin/zsh|g' /etc/passwd
+fi
+
 exit 0
 EOF
 
@@ -207,6 +208,10 @@ popd
 pushd package/kernel/mt76
 sed -i '/mt7662u_rom_patch.bin/a\\techo mt76-usb disable_usb_sg=1 > $\(1\)\/etc\/modules.d\/mt76-usb' Makefile
 popd
+
+# Change default shell to zsh
+sed -i 's|/bin/ash|/usr/bin/zsh|g' package/base-files/files/etc/passwd
+
 
 # Add extra wireless drivers
 svn co https://github.com/immortalwrt/immortalwrt/branches/openwrt-18.06-k5.4/package/kernel/rtl8812au-ac
