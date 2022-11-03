@@ -78,6 +78,8 @@ jobs:
         chmod +x $DIY_P2_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY_P2_SH
+        $GITHUB_WORKSPACE/scripts/preset-speedtest-cli.sh aarch64
+        $GITHUB_WORKSPACE/scripts/preset-terminal-tools.sh
 
     - name: Download package
       id: package
