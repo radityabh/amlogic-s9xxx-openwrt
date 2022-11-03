@@ -1,0 +1,484 @@
+#!/bin/bash
+#--------------------------------------------------------
+#   Don't remove this section for credits
+#   Don't rename this file
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+#   This script function is to switch between clash_core
+#   and clash_premium_core
+#   by Helmi Amirudin a.k.a helmiau
+#   my profile page https://wwww.helmiau.com
+#   my github https://github.com/helmiau
+#--------------------------------------------------------
+
+#-- Warna Teks Installer
+R='\033[1;31m' # Merah Muda
+G='\033[1;32m' # Hijau Muda
+C='\033[0;36m' # Biru Muda
+Y='\033[1;33m' # Kuning
+N='\033[1;37m' # Putih
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+#	Initial Info
+#--------------------------------------------------------
+COREDIR="/etc/openclash/core"
+
+# Core Names
+CORE="$COREDIR/clash"
+TUN="$COREDIR/clash_tun"
+GAME="$COREDIR/clash_game"
+
+# Vernesong Core Names
+VSCORE="$COREDIR/clash_vernesong"
+VSTUN="$COREDIR/clash_tun_vernesong"
+VSGAME="$COREDIR/clash_game_vernesong"
+
+# Dreamacro Core Names
+DMCORE="$COREDIR/clash_dreamacro"
+DMTUN="$COREDIR/clash_tun_dreamacro"
+
+# Meta Core Name
+META="$COREDIR/clash_meta"
+
+# Core Extensions
+TARGZ=".tar.gz"
+DOTGZ=".gz"
+
+# Core Extensions
+ROOTCORE="/root/clash"
+
+ARCH=$(grep core_version /etc/config/openclash | awk -F"'" '$0=$2')
+#ORILINK=$(curl -sL http://api.github.com/repos/Dreamacro/clash/releases/tags/premium | grep /clash-linux-$1 | sed 's/.*url\": \"//g' | sed 's/\"//g')
+#PREMLINK=$(curl -sL http://api.github.com/repos/vernesong/OpenClash/releases/tags/Clash | grep /clash-linux-$1 | sed 's/.*url\": \"//g' | sed 's/\"//g')
+DMCORESTAT=$(if [[ -f $VSCORE ]] && [[ -f $VSTUN ]]; then echo -e "${G}Installed (Used)${N}"; elif [[ -f $DMCORE ]] && [[ -f $DMTUN ]]; then echo -e "${Y}Installed${N}"; else echo -e "${R}Unavailable${N}"; fi)
+VSCORESTAT=$(if [[ -f $DMCORE ]] && [[ -f $DMTUN ]]; then echo -e "${G}Installed (Used)${N}"; elif [[ -f $VSCORE ]] && [[ -f $VSTUN ]]; then echo -e "${Y}Installed${N}"; else echo -e "${R}Unavailable${N}"; fi)
+METACORESTAT=$(if [[ -f $META ]]; then echo -e "${G}Installed${N}"; else echo -e "${R}Unavailable${N}"; fi)
+IPKVER=$(opkg list-installed | grep luci-app-openclash | sed -e 's/luci-app-openclash - //g' )
+IPKSTAT=$(if [[ $IPKVER == *"."* ]]; then echo -e "${G}Installed${N}";else echo -e "${R}Unavailable${N}"; fi)
+#wget $(curl -sL https://github.com/vernesong/OpenClash/releases | grep luci-app-openclash_ | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+SCRIPTVER="2.9"
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+function helmi_clash_chmod() {
+	echo -e "${Y}"
+	chmod +x $CORE*
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+function helmi_clash_start() {
+	echo -e "${Y}"
+	/etc/init.d/openclash start
+	uci set openclash.config.enable=1
+	uci commit openclash
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+function helmi_clash_stop() {
+	echo -e "${Y}"
+	/etc/init.d/openclash stop
+	uci set openclash.config.enable=0
+	uci commit openclash
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#	Dreamacro core (Download, Install, Switch)
+#--------------------------------------------------------
+function helmi_download_dreamacro() {
+	echo -e "${Y}Downloading Dreamacro clash core..."
+	wget -O $ROOTCORE-dm-$ARCH$DOTGZ $(curl -sL http://api.github.com/repos/Dreamacro/clash/releases | grep premium/clash-$ARCH | awk -F '"' '{print $4}' | sed 's/https/http/g')
+	echo -e "${G}Dreamacro clash core downloaded..."
+	sleep 2
+	echo -e "${Y}Downloading Dreamacro clash TUN Premium core..."
+	wget -O $ROOTCORE-dmtun-$ARCH$DOTGZ $(curl -sL http://api.github.com/repos/Dreamacro/clash/releases/tags/premium | grep premium/clash-$ARCH | awk -F '"' '{print $4}' | sed 's/https/http/g')
+	echo -e "${G}Dreamacro clash TUN Premium core downloaded..."
+}
+
+function helmi_install_dreamacro() {
+	# Install Dreamacro Main Core
+	if [[ -s $ROOTCORE-dm-$ARCH$DOTGZ ]]; then
+		echo -e "${G}"
+		gunzip -d $ROOTCORE-dm-$ARCH$DOTGZ
+		mv $ROOTCORE-dm-$ARCH $DMCORE
+		echo "  Dreamacro Main Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Dreamacro Main Core Install Failed...."
+		echo -e "${G}"
+	fi
+	# Install Dreamacro TUN Core
+	if [[ -s $ROOTCORE-dmtun-$ARCH$DOTGZ ]]; then
+		echo -e "${G}"
+		gunzip -d $ROOTCORE-dmtun-$ARCH$DOTGZ
+		mv $ROOTCORE-dmtun-$ARCH $DMTUN
+		echo "  Dreamacro TUN Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Dreamacro TUN Core Install Failed...."
+		echo -e "${G}"
+	fi
+}
+
+function helmi_switch_dreamacro() {
+	echo -e "${Y}"
+	# Move Main Core
+	[[ ! -f $VSCORE ]] && [[ -f $DMCORE ]] && mv $CORE $VSCORE && mv $DMCORE $CORE
+	echo "  Dreamacro Main Core Switched....!"
+	# Move TUN Core
+	[[ ! -f $VSTUN ]] && [[ -f $DMTUN ]] && [[ -f $META ]] && mv $TUN $VSTUN && mv $DMTUN $TUN
+	[[ -f $VSTUN ]] && [[ -f $DMTUN ]] && [[ ! -f $META ]] && mv $TUN $META && mv $DMTUN $TUN
+	echo "  Dreamacro TUN Core Switched....!"
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#	Meta core (Download, Install, Switch)
+#--------------------------------------------------------
+function helmi_download_meta() {
+	echo -e "${Y}Downloading Meta TUN Premium core..."
+	wget -O $ROOTCORE-meta-$ARCH$DOTGZ $(curl -sL http://api.github.com/repos/MetaCubeX/Clash.Meta/releases | grep /Clash.Meta-$1 | awk -F '"' '{print $4}' | sed -n '1p' | sed 's/https/http/g')
+	echo -e "${G}Meta TUN Premium core downloaded..."
+}
+
+function helmi_install_meta() {	
+	if [[ -s $ROOTCORE-meta-$ARCH$DOTGZ ]]; then
+		echo -e "${G}"
+		gunzip -d $ROOTCORE-meta-$ARCH$DOTGZ
+		mv $ROOTCORE-meta-$ARCH $META
+		echo "  Meta Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Meta Core Install Failed...."
+		echo -e "${G}"
+	fi
+}
+
+function helmi_switch_meta() {
+	echo -e "${Y}"
+	# Move TUN Core
+	[[ ! -f $VSTUN ]] && [[ -f $DMTUN ]] && [[ -f $META ]] && mv $TUN $VSTUN && mv $META $TUN
+	[[ -f $VSTUN ]] && [[ ! -f $DMTUN ]] && [[ -f $META ]] && mv $TUN $DMTUN && mv $META $TUN
+	echo "  Meta TUN Core Switched....!"
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#	Vernesong core (Download, Install, Switch)
+#--------------------------------------------------------
+function helmi_download_vernesong() {
+	echo -e "${Y}Downloading Vernesong clash core..."
+	wget -O $ROOTCORE-vs-$ARCH$TARGZ $(curl -sL http://api.github.com/repos/vernesong/OpenClash/releases/tags/Clash | grep Clash/clash-$ARCH | awk -F '"' '{print $4}' | sed 's/https/http/g')
+	echo -e "${G}Vernesong clash core downloaded..."
+	sleep 2
+	echo -e "${Y}Downloading Vernesong clash TUN Premium core"
+	wget -O $ROOTCORE-vstun-$ARCH$DOTGZ $(curl -sL http://api.github.com/repos/vernesong/OpenClash/releases/tags/TUN-Premium | grep TUN-Premium/clash-$ARCH | awk -F '"' '{print $4}' | sed 's/https/http/g')
+	echo -e "${G}Vernesong clash TUN Premium core downloaded..."
+	sleep 2
+	echo -e "${Y}Downloading Vernesong clash TUN Game core"
+	wget -O $ROOTCORE-vsgame-$ARCH$TARGZ $(curl -sL http://api.github.com/repos/vernesong/OpenClash/releases/tags/TUN | grep TUN/clash-$ARCH | awk -F '"' '{print $4}' | sed 's/https/http/g')
+	echo -e "${G}Vernesong clash TUN Game core downloaded..."
+}
+
+function helmi_install_vernesong() {
+	# Install Vernesong Main Core
+	if [[ -s $ROOTCORE-vs-$ARCH$TARGZ ]]; then
+		echo -e "${G}"
+		tar xzf $ROOTCORE-vs-$ARCH$TARGZ -C /root/
+		mv $ROOTCORE $VSCORE
+		rm -f $ROOTCORE-vs-$ARCH$TARGZ || true
+		echo "  Vernesong Main Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Vernesong Main Core Install Failed...."
+		echo -e "${G}"
+	fi
+	# Install Vernesong TUN Core
+	if [[ -s $ROOTCORE-vstun-$ARCH$DOTGZ ]]; then
+		echo -e "${G}"
+		gunzip -d $ROOTCORE-vstun-$ARCH$DOTGZ
+		mv $ROOTCORE-vstun-$ARCH $VSTUN
+		echo "  Vernesong TUN Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Vernesong TUN Core Install Failed...."
+		echo -e "${G}"
+	fi
+	# Install Vernesong Game Core
+	if [[ -s $ROOTCORE-vsgame-$ARCH$TARGZ ]]; then
+		echo -e "${G}"
+		tar xzf $ROOTCORE-vsgame-$ARCH$TARGZ -C /root/
+		mv $ROOTCORE $VSGAME
+		rm -f $ROOTCORE-vsgame-$ARCH$TARGZ || true
+		echo "  Vernesong TUN Game Core Install Done...."
+	else
+		echo -e "${R}"
+		echo "  Vernesong TUN Game Core Install Failed...."
+		echo -e "${G}"
+	fi
+}
+
+function helmi_switch_vernesong() {
+	echo -e "${Y}"
+	# Move Main Core
+	[[ -f $VSCORE ]] && [[ ! -f $DMCORE ]] && mv $CORE $DMCORE && mv $VSCORE $CORE
+	echo "  Dreamacro Main Core Switched....!"
+	# Move TUN Core
+	[[ -f $VSTUN ]] && [[ ! -f $DMTUN ]] && [[ -f $META ]] && mv $TUN $DMTUN && mv $VSTUN $TUN
+	[[ -f $VSTUN ]] && [[ -f $DMTUN ]] && [[ ! -f $META ]] && mv $TUN $META && mv $VSTUN $TUN
+	echo "  Dreamacro TUN Core Switched....!"
+	echo -e "${G}"
+}
+
+#--------------------------------------------------------
+#	Download and Install OpenClash IPK
+#--------------------------------------------------------
+# Stable Release
+function helmi_download_ipk() {
+	echo -e "${Y}"
+	#wget -O /root/luci-app-openclash.ipk $(curl -sL https://github.com/vernesong/OpenClash/releases | grep luci-app-openclash_ | sed -e 's/\"//g' -e 's/ //g' -e 's/rel=.*//g' -e 's#<ahref=#http://github.com#g' | awk 'FNR <= 1')
+	export ocipkurl=$(curl -sL https://github.com/vernesong/OpenClash/tree/master | grep luci-app-openclash_ | awk 'FNR <= 1' | sed -e 's|^.*luci-app-|https://github.com/vernesong/OpenClash/raw/master/luci-app-|' -e 's|</a>.*||')
+	wget -O /root/luci-app-openclash.ipk $ocipkurl
+	unset ocipkurl
+	echo -e "${G}"
+}
+
+# Beta Release
+function helmi_download_ipk_dev() {
+	echo -e "${Y}"
+	export ocipkurl=$(curl -sL https://github.com/vernesong/OpenClash/tree/dev | grep luci-app-openclash_ | awk 'FNR <= 1' | sed -e 's|^.*luci-app-|https://github.com/vernesong/OpenClash/raw/dev/luci-app-|' -e 's|</a>.*||')
+	wget -O /root/luci-app-openclash.ipk $ocipkurl
+	unset ocipkurl
+	echo -e "${G}"
+}
+
+# Install IPK Release
+function helmi_install_ipk() {
+	if [[ -s /root/luci-app-openclash.ipk ]]; then
+		opkg install /root/luci-app-openclash.ipk
+		rm -f /root/luci-app-openclash.ipk || true
+		if [[ -f /bin/helmiwrt ]]; then
+			/bin/helmiwrt > /dev/null
+		fi
+		echo -e "${G}App Install Done....${Y}"
+	else
+		echo -e "${R}Install Failed....${Y}"
+	fi
+}
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+function helmi_install_tun() {
+	if [[ -s $ROOTCORE-tun-$ARCH$DOTGZ ]]; then
+		gunzip -d $ROOTCORE-tun-$ARCH$DOTGZ
+		mv $ROOTCORE-tun-$ARCH $TUN
+		echo -e "${G}TUN Core Install Done....${Y}"
+	else
+		echo -e "${R}TUN Core Install Failed....${Y}"
+	fi
+}
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+function helmi_install_game() {
+	if [[ -s $ROOTCORE-game-$ARCH$TARGZ ]]; then
+		tar xzf $ROOTCORE-game-$ARCH$TARGZ -C /root/
+		mv $ROOTCORE $GAME
+		rm -f $ROOTCORE-game-$ARCH$TARGZ || true
+		echo -e "${G}Game Core Install Done....${Y}"
+	else
+		echo -e "${R}Game Core Install Failed....${Y}"
+	fi
+}
+
+#--------------------------------------------------------
+#	Install AdBlock
+#--------------------------------------------------------
+function helmi_adblock() {
+	echo -e "${Y}Downloading Rules..."
+	wget -O --show-progress /root/HelmiWrt-Adblock.yaml http://sbc.io/hosts/alternates/fakenews-gambling/hosts
+	if [[ -s /root/HelmiWrt-Adblock.yaml ]]; then
+		echo -e "Rules downloaded, patching..."
+		ROOTADS="/root/HelmiWrt-Adblock.yaml"
+		CLASHADS="/etc/openclash/rule_provider/HelmiWrt-Adblock.yaml"
+		grep -v -e "^#" $ROOTADS -e "^\s*$" -e "\blocalhost\b" | sed -E -e "s/^127.0.0.1/0.0.0.0/" -e "s/0.0.0.0 /  - DOMAIN-KEYWORD,/" -e "s/#.*$//" -e "s/\t/ /" -e "s/[[:space:]]{2,}/ /" | tr -d "\r" > $CLASHADS
+		sed	-i "/ip6-allhosts/c\payload:" $CLASHADS
+		sed -i '/payload:/,$!d' $CLASHADS
+		rm $ROOTADS
+		echo -e "${G}Install Done....${Y}"
+	else
+		echo -e "${R}Install Failed....${Y}"
+	fi
+}
+
+#--------------------------------------------------------
+#   Update Script
+#--------------------------------------------------------
+function helmi_update_script() {
+	export FLIX="/tmp/ocsmup"
+	[ -f $FLIX ] && rm -f $FLIX
+	if [[ $1 = "update" ]]; then
+		logger "  helmiocsm : Updating OCSM script..."
+		echo -e "  helmiocsm : Updating OCSM script..."
+		cat << 'EOF' > $FLIX
+#!/bin/bash
+curl -sH https://raw.githubusercontent.com/helmiau/HelmiWrt-OS/main/bin/ocsm > /bin/ocsm
+chmod +x /bin/ocsm
+/bin/ocsm
+EOF
+		logger "  helmiocsm : Setting up permission..."
+		echo -e "  helmiocsm : Setting up permission..."
+		chmod 755 $FLIX
+		sed -i -e 's/\r$//' $FLIX
+		logger "  helmiocsm : Update OCSM done..."
+		echo -e "  helmiocsm : Update OCSM done..."
+		$FLIX
+	fi
+	unset FLIX
+}
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+echo -e "${N}=====================================${G}"
+echo -e "    OpenClash Script Manager ${R}v$SCRIPTVER${G}"
+echo -e "         Created by ${Y}helmiau"
+echo -e "${N}=====================================${N}"
+echo -e "  ${Y}Architecture   : $ARCH"
+echo -e "  ${Y}OpenClash App  : $IPKSTAT"
+echo -e "  ${Y}App Version    : $IPKVER"
+echo -e "  ${Y}Dreamacro Core : $DMCORESTAT"
+echo -e "  ${Y}Vernesong Core : $VSCORESTAT"
+echo -e "  ${Y}Meta Core      : $METACORESTAT"
+echo -e "${N}=====================================${G}"
+if [[ $VSCORESTAT == *"(Used)"* ]]; then
+	echo "  Switch to Dreamacro core  : s"
+else
+	echo "  Switch to Vernesong core  : s"
+fi
+echo -e "${N}=====================================${G}"
+echo "  Install Dreamacro core    : d"
+echo "  Install Vernesong core    : v"
+echo "  Install Meta core         : m"
+echo "  Re-Install all cores      : r"
+echo -e "${N}=====================================${Y}"
+echo "  Install OpenClash Stable  : is"
+echo "  Install OpenClash Dev     : id"
+echo -e "${N}=====================================${R}"
+echo "  Start OpenClash           : st"
+echo "  Stop OpenClash            : sp"
+echo -e "${N}=====================================${Y}"
+echo "  Add Adblock Rules         : b"
+echo "  Update OCSM Script        : u"
+echo -e "${N}=====================================${G}"
+echo -n "  "
+read -r OPT
+
+#--------------------------------------------------------
+#   If you use some codes frome here, please give credit to www.helmiau.com
+#--------------------------------------------------------
+if [[ $OPT = "s" ]];then
+	helmi_clash_stop
+	if [[ $VSCORESTAT == *"(Used)"* ]]; then
+		echo "  Switching to Dreamacro core..."
+		if [[ -f $DMCORE ]] && [[ -f $DMTUN ]];then
+			helmi_switch_dreamacro
+			echo -e "${G}  Switch to Dreamacro core Done...!${N}"
+		else
+			echo -e "${R}  Switch to Dreamacro core Error...!${N}"
+			echo -e "${R}  Reinstall Dreamacro core please..!${N}"
+		fi
+	else
+		echo "  Switching to Vernesong core..."
+		if [[ -f $VSCORE ]] && [[ -f $VSTUN ]];then
+			helmi_switch_vernesong
+			echo -e "${G}  Switch to Vernesong core Done...!${N}"
+		else
+			echo -e "${R}  Switch to Vernesong core Error...!${N}"
+			echo -e "${R}  Reinstall Vernesong core please..!${N}"
+		fi
+	fi
+elif [[ $OPT = "d" ]];then # Download & Install Dreamacro Core
+	echo "  Downloading Dreamacro Core...."
+	helmi_download_dreamacro
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing Dreamacro Core...."
+	helmi_install_dreamacro
+elif [[ $OPT = "v" ]];then # Download & Install Vernesong Core
+	echo "  Downloading Vernesong Core...."
+	helmi_download_vernesong
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing Vernesong Core...."
+	helmi_install_vernesong
+elif [[ $OPT = "m" ]];then # Download & Install Meta Core
+	echo "  Downloading Meta Core...."
+	helmi_download_meta
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing Meta Core...."
+	helmi_install_meta
+elif [[ $OPT = "r" ]];then # Reinstall All Cores
+	echo "  Downloading Dreamacro Core...."
+	helmi_download_dreamacro
+	echo "  Downloading Vernesong Core...."
+	helmi_download_vernesong
+	echo "  Downloading Meta Core...."
+	helmi_download_meta
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing Dreamacro Core...."
+	helmi_install_dreamacro
+	echo "  Installing Vernesong Core...."
+	helmi_install_vernesong
+	echo "  Installing Meta Core...."
+	helmi_install_meta
+	echo "  Configuring permissions...."
+	helmi_clash_chmod
+	echo "  Starting Clash...."
+	helmi_clash_start
+elif [[ $OPT = "is" ]];then # Install IPK Stable
+	echo "  Downloading OpenClash App - Stable Release...."
+	helmi_download_ipk
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing OpenClash App...."
+	helmi_install_ipk
+elif [[ $OPT = "id" ]];then # Install IPK Developer
+	echo "  Downloading OpenClash App - Developer Release...."
+	helmi_download_ipk_dev
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+	echo "  Installing OpenClash App...."
+	helmi_install_ipk
+elif [[ $OPT = "st" ]];then # Start OpenClash
+	echo "  Configuring permissions...."
+	helmi_clash_chmod
+	echo "  Starting Clash...."
+	helmi_clash_start
+	echo "  Done...."
+elif [[ $OPT = "sp" ]];then # Stop OpenClash
+	echo "  Stopping OpenClash...."
+	helmi_clash_stop
+elif [[ $OPT = "b" ]];then # Install Adblock
+	echo "  Installing Adblock Rules...."
+	helmi_adblock
+elif [[ $OPT = "u" ]];then # Update OCSM
+	echo "  Updating OCSM...."
+	helmi_update_script
+else
+	exit
+fi
